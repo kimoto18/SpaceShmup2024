@@ -4,40 +4,61 @@ using UnityEngine;
 
 public class BoundsCheck : MonoBehaviour
 {
-        [Header("Dynamic")]
-     public float camWidth;
-     public float camHeight;
- 
-     void Awake()
+    public enum eType { center, inset, outset };                              // a
+
+    [Header("Inscribed")]
+    public eType boundsType = eType.center;                                   // a
+    public float radius = 1f;
+    public bool keepOnScreen = true;
+
+
+    [Header("Dynamic")]
+    public bool isOnScreen = true;
+    public float camWidth;
+    public float camHeight;
+
+    void Awake()
     {
- camHeight = Camera.main.orthographicSize;                             // b
- camWidth = camHeight * Camera.main.aspect;                            // c
-     }
- 
-     void LateUpdate()
-    {                                                      // d
- Vector3 pos = transform.position;
+        camHeight = Camera.main.orthographicSize;                             // b
+        camWidth = camHeight * Camera.main.aspect;                            // c
+    }
 
-         // Restrict the X position to camWidth
-         if (pos.x > camWidth)
-        {                                               // e
- pos.x = camWidth;                                                 // e
-         }
-         if (pos.x < -camWidth)
-        { // e
- pos.x = -camWidth;                                                // e
-         }
+    void LateUpdate()
+    {
+        // Find the checkRadius that will enable center, inset, or outset     // b
+        float checkRadius = 0;
+        if (boundsType == eType.inset) checkRadius = -radius;
+        if (boundsType == eType.outset) checkRadius = radius;
 
-         // Restrict the Y position to camHeight
-         if (pos.y > camHeight)
-        {                                              // e
- pos.y = camHeight;                                                // e
-         }
-         if (pos.y < -camHeight)
-        {                                             // e
- pos.y = -camHeight;                                               // e
-         }
+        Vector3 pos = transform.position;
+        isOnScreen = true;                                                    // d
 
-transform.position = pos;
-     }
+        if (pos.x > camWidth + checkRadius)
+        {
+            pos.x = camWidth + checkRadius;
+            isOnScreen = false;                                               // e
+        }
+        if (pos.x < -camWidth - checkRadius)
+        {
+            pos.x = -camWidth - checkRadius;
+            isOnScreen = false;                                               // e
+        }
+
+        if (pos.y > camHeight + checkRadius)
+        {
+            pos.y = camHeight + checkRadius;
+            isOnScreen = false;                                               // e
+        }
+        if (pos.y < -camHeight - checkRadius)
+        {
+            pos.y = -camHeight - checkRadius;
+            isOnScreen = false;                                               // e
+        }
+
+        if (keepOnScreen && !isOnScreen)
+        {                                  // f
+            transform.position = pos;                                         // g
+            isOnScreen = true;
+        }
+    }
 }
